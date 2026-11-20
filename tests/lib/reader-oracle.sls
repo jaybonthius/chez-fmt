@@ -461,7 +461,7 @@
                          (string=? (diagnostic-message d) message)))]))])))))
 
   (define (corpus-directories)
-    (let ([v (getenv "CHEZ_TOOLS_CORPORA")])
+    (let ([v (getenv "CZ_CORPORA")])
       (if (or (not v) (string=? v ""))
           '()
           (let loop ([chars (string->list v)] [current '()] [acc '()])

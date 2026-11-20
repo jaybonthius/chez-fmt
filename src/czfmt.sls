@@ -1,4 +1,4 @@
-(library (chez-fmt)
+(library (czfmt)
   (export
     ;; styles
     make-format-style format-style? format-style-rules format-style-call-layout
@@ -344,9 +344,9 @@
               (if (and (eq? (token-kind tok) 'line-comment) (alone-on-line? r tok))
                   (let ([text (marker-text r tok)] [line (line-of r (token-start tok))])
                     (cond
-                      [(and (not off-line) (string=? text "chez-fmt: off")) (loop (fx+ i 1) line)]
-                      [(and off-line (string=? text "chez-fmt: on")) (mark! off-line line) (loop (fx+ i 1) #f)]
-                      [(and (not off-line) (string=? text "chez-fmt: skip"))
+                      [(and (not off-line) (string=? text "czfmt: off")) (loop (fx+ i 1) line)]
+                      [(and off-line (string=? text "czfmt: on")) (mark! off-line line) (loop (fx+ i 1) #f)]
+                      [(and (not off-line) (string=? text "czfmt: skip"))
                        (let-values ([(l k) (context-at r (token-start tok))])
                          (when (fx< k (vector-length (layout-data l)))
                            (mark! line (line-of r (fx- (datum-end (vector-ref (layout-data l) k)) 1)))))

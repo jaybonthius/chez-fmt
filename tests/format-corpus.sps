@@ -1,4 +1,4 @@
-(import (chezscheme) (reader-oracle) (chez-fmt) (analysis reader) (analysis text)
+(import (chezscheme) (reader-oracle) (czfmt) (analysis reader) (analysis text)
         (analysis diagnostic) (analysis config) (analysis document) (analysis path))
 
 (random-seed 20261110)
@@ -25,10 +25,10 @@
 
 (define (formatted path s style) (apply-edits s (format-text (cst-for path s) style)))
 
-;; CHEZ_TOOLS_FORMAT_CORPORA is colon-separated NAME=DIR|GLOB,... entries,
+;; CZ_FORMAT_CORPORA is colon-separated NAME=DIR|GLOB,... entries,
 ;; the globs relative to DIR; NAME is one of tests/data/format-corpus-changes.ss.
 (define named-corpora
-  (let ([v (getenv "CHEZ_TOOLS_FORMAT_CORPORA")])
+  (let ([v (getenv "CZ_FORMAT_CORPORA")])
     (if (or (not v) (string=? v ""))
         '()
         (map (lambda (entry)
@@ -180,7 +180,7 @@
 
 (let ([dirs (corpus-directories)])
   (if (and (null? dirs) (null? named-corpora))
-      (printf "formatter corpus: skipped, neither CHEZ_TOOLS_CORPORA nor CHEZ_TOOLS_FORMAT_CORPORA is set\n")
+      (printf "formatter corpus: skipped, neither CZ_CORPORA nor CZ_FORMAT_CORPORA is set\n")
       (let ([texts (append (apply append (map (lambda (dir) (corpus-texts dir '("**/*"))) dirs))
                            (apply append (map (lambda (c) (corpus-texts (cadr c) (caddr c))) named-corpora)))]
             [outcomes (make-eq-hashtable)])
@@ -192,7 +192,7 @@
         (let ([seven (find (lambda (dir) (file-exists? (string-append dir "/s/7.ss"))) dirs)])
           (if seven
               (check-seven! seven)
-              (printf "s/7.ss excerpt: skipped, no corpus in CHEZ_TOOLS_CORPORA holds Chez's s/7.ss\n")))
+              (printf "s/7.ss excerpt: skipped, no corpus in CZ_CORPORA holds Chez's s/7.ss\n")))
         (for-each
           (lambda (c)
             (let-values ([(lines decision raw) (change-shares (corpus-texts (cadr c) (caddr c)))])

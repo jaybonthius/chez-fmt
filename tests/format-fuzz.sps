@@ -1,8 +1,8 @@
 (import (chezscheme) (reader-oracle) (scheme-text-generator) (analysis text) (analysis reader)
-        (analysis diagnostic) (chez-fmt))
+        (analysis diagnostic) (czfmt))
 
 (define case-count
-  (let ([v (getenv "CHEZ_TOOLS_MUTANTS")]) (if v (string->number v) 100000)))
+  (let ([v (getenv "CZ_MUTANTS")]) (if v (string->number v) 100000)))
 
 (random-seed 20261110)
 
@@ -60,7 +60,7 @@
   (do ([k 0 (+ k 1)]) ((= k (quotient case-count 2)))
     (check-case! (random-scheme-text) (random-mode)))
   (if (null? dirs)
-      (printf "formatter fuzzing: ~a generated texts; corpus mutants skipped, CHEZ_TOOLS_CORPORA is not set\n" (quotient case-count 2))
+      (printf "formatter fuzzing: ~a generated texts; corpus mutants skipped, CZ_CORPORA is not set\n" (quotient case-count 2))
       (let ([sources (list->vector
                        (map (lambda (p) (let ([s (read-source-file p)]) (cons s (line-starts s))))
                             (apply append (map corpus-files dirs))))])

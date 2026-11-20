@@ -1,4 +1,4 @@
-(import (chezscheme) (reader-oracle) (programs) (analysis reader) (analysis text) (chez-fmt) (analysis path)
+(import (chezscheme) (reader-oracle) (programs) (analysis reader) (analysis text) (czfmt) (analysis path)
         (analysis posix))
 
 (define failures 0)
@@ -38,7 +38,7 @@
 (let ([dir (s-directory)])
   (if (not dir)
       (begin
-        (printf "formatter performance: skipped the corpus gates, no corpus in CHEZ_TOOLS_CORPORA holds Chez's s/read.ss\n")
+        (printf "formatter performance: skipped the corpus gates, no corpus in CZ_CORPORA holds Chez's s/read.ss\n")
         (exit (if (= failures 0) 0 1)))
       (let* ([files (filter (lambda (p) (equal? (path-extension p) "ss")) (corpus-files (string-append dir "/s")))]
              [texts (map (lambda (p) (cons p (read-source-file p))) files)]
@@ -58,10 +58,10 @@
           (best-of 5 (lambda () (format-lines ranged default-format-style middle (+ middle 49)))) 10)
         (gate! "format-line-indentation of its last line (best of 5)"
           (best-of 5 (lambda () (format-line-indentation c default-format-style last-line))) 50)
-        (let ([r (run-program (string-append (current-directory) "/build/bin/chez-fmt.so")
+        (let ([r (run-program (string-append (current-directory) "/build/bin/czfmt.so")
                    (list "--check" (string-append dir "/s")) (current-directory) 60)])
-          (unless (memv (exit-status-code (program-status r)) '(0 1)) (errorf 'format-perf "chez-fmt failed"))
-          (gate! (format "chez-fmt --check over s/, ~a files, from process start" (length files))
+          (unless (memv (exit-status-code (program-status r)) '(0 1)) (errorf 'format-perf "czfmt failed"))
+          (gate! (format "czfmt --check over s/, ~a files, from process start" (length files))
             (* 1000 (program-seconds r)) 2000))
         (printf "formatter performance: ~a failures\n" failures)
         (exit (if (= failures 0) 0 1)))))

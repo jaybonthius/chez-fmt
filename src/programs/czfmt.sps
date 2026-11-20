@@ -1,8 +1,8 @@
-(import (chezscheme) (chez-fmt) (analysis config) (analysis document) (analysis text)
+(import (chezscheme) (czfmt) (analysis config) (analysis document) (analysis text)
         (analysis diagnostic) (analysis path) (analysis posix))
 
 (define usage
-  "usage: chez-fmt [--check] [--diff] [--range L1:L2] [--config FILE] PATH...
+  "usage: czfmt [--check] [--diff] [--range L1:L2] [--config FILE] PATH...
 
 Formats each file, and each Scheme file under each directory, in place. Only
 whitespace changes: indentation, spaces inside delimiters and at line ends,
@@ -13,9 +13,9 @@ result to standard output.
   --check        write nothing; list the files that would change
   --diff         write nothing; print the changes as a unified diff
   --range L1:L2  format only lines L1 to L2, counted from 1
-  --config FILE  use FILE instead of the .chez-tools files above each path
+  --config FILE  use FILE instead of the .cz files above each path
 
-The style comes from the (format ...) section of the project's .chez-tools.
+The style comes from the (format ...) section of the project's .cz.
 
 Exit status: 0 when nothing needed formatting or every file was formatted,
 1 when --check found a file to change, 2 when a file could not be formatted
@@ -181,7 +181,7 @@ or on a usage, configuration or internal error.
     (unless (= (file-status-links status) 1)
       (unformattable "the file has ~a hard links, which replacing it would separate, so it was left as it is"
         (file-status-links status)))
-    (let-values ([(temporary fd) (create-temporary-file (string-append (path-parent real) "/.chez-fmt-" (path-last real) "-"))])
+    (let-values ([(temporary fd) (create-temporary-file (string-append (path-parent real) "/.czfmt-" (path-last real) "-"))])
       (let ([open? #t])
         (guard (e [#t (when open? (close-fd fd)) (delete-file temporary) (raise e)])
           (set-fd-mode! fd mode)
@@ -261,7 +261,7 @@ or on a usage, configuration or internal error.
       status)))
 
 (unless (and (equal? (call-with-values scheme-version-number list) '(10 4 1)) (threaded?))
-  (fail "chez-fmt needs threaded Chez Scheme 10.4.1, not ~a~a"
+  (fail "czfmt needs threaded Chez Scheme 10.4.1, not ~a~a"
     (scheme-version) (if (threaded?) "" " (non-threaded)")))
 
 ;; Chez's own interrupt handler runs only once the main thread has spent
@@ -270,5 +270,5 @@ or on a usage, configuration or internal error.
 (set-signal-default! signal-interrupt)
 
 (exit
-  (guard (c [#t (fail "chez-fmt: ~a" (call-with-string-output-port (lambda (p) (display-condition c p))))])
+  (guard (c [#t (fail "czfmt: ~a" (call-with-string-output-port (lambda (p) (display-condition c p))))])
     (main (cdr (command-line)))))

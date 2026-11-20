@@ -34,7 +34,7 @@
       [(16) " #| block\n  comment |# "]
       [(17) " ;c\x2028;"]
       [(18) "\x2028;"]
-      [(19) (string-append "\n" (indentation) "; chez-fmt: skip\n" (indentation))]
+      [(19) (string-append "\n" (indentation) "; czfmt: skip\n" (indentation))]
       [(20) (string-append "\n\f" (indentation))]
       [else " \x85; "]))
 
@@ -61,8 +61,8 @@
                       (loop (- i 1)
                             (cons* (case (random 8)
                                      [(0) "\n;;; heading\n"]
-                                     [(1) "\n; chez-fmt: off\n"]
-                                     [(2) "\n; chez-fmt: on\n"]
+                                     [(1) "\n; czfmt: off\n"]
+                                     [(2) "\n; czfmt: on\n"]
                                      [(3) (string-append "\n" (indentation))]
                                      [else "\n"])
                                    (random-datum 5)

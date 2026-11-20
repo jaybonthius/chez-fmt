@@ -1,4 +1,4 @@
-(import (chezscheme) (check) (scheme-text-generator) (chez-fmt) (analysis reader) (analysis text)
+(import (chezscheme) (check) (scheme-text-generator) (czfmt) (analysis reader) (analysis text)
         (analysis diagnostic) (analysis config) (analysis posix))
 
 (define chez-mode (make-reader-mode 'chezscheme 'no-fold))
@@ -302,30 +302,30 @@
 
 (test "disabled regions and the skip marker leave their lines alone but keep their frames"
   (check-equal?
-    (lines "(define (f)" "  ;; chez-fmt: off" "     (g   x" "  y)" "  ;; chez-fmt: on" "  (h" "   x))")
-    (formatted (lines "(define (f)" "  ;; chez-fmt: off" "     (g   x" "  y)" "  ;; chez-fmt: on" "(h" " x))")))
+    (lines "(define (f)" "  ;; czfmt: off" "     (g   x" "  y)" "  ;; czfmt: on" "  (h" "   x))")
+    (formatted (lines "(define (f)" "  ;; czfmt: off" "     (g   x" "  y)" "  ;; czfmt: on" "(h" " x))")))
   (check-equal?
-    (lines "(define (f)" "  ;; chez-fmt: off" "     (g   x" "  y))" "    " "  (h)")
-    (formatted (lines "(define (f)" "  ;; chez-fmt: off" "     (g   x" "  y))" "    " "  (h)")))
+    (lines "(define (f)" "  ;; czfmt: off" "     (g   x" "  y))" "    " "  (h)")
+    (formatted (lines "(define (f)" "  ;; czfmt: off" "     (g   x" "  y))" "    " "  (h)")))
   (check-equal?
-    (lines "(define t" "    ; chez-fmt: skip" "  '([a    1]" "       [bb 2])" "  (g" "   1))")
-    (formatted (lines "(define t" "    ; chez-fmt: skip" "  '([a    1]" "       [bb 2])" "(g" " 1))")))
+    (lines "(define t" "    ; czfmt: skip" "  '([a    1]" "       [bb 2])" "  (g" "   1))")
+    (formatted (lines "(define t" "    ; czfmt: skip" "  '([a    1]" "       [bb 2])" "(g" " 1))")))
   (check-equal?
-    (lines "(f" "    ; chez-fmt: skip" "  )")
-    (formatted (lines "(f" "  ; chez-fmt: skip" ")")))
+    (lines "(f" "    ; czfmt: skip" "  )")
+    (formatted (lines "(f" "  ; czfmt: skip" ")")))
   (check-equal?
-    (lines "(f" "    ; chez-fmt: skipped" "  x)")
-    (formatted (lines "(f" "  ; chez-fmt: skipped" "x)"))))
+    (lines "(f" "    ; czfmt: skipped" "  x)")
+    (formatted (lines "(f" "  ; czfmt: skipped" "x)"))))
 
 (test "a marker followed by spaces or tabs is still a marker"
   (for-each
     (lambda (trailing)
       (check-equal?
-        (lines (string-append ";; chez-fmt: off" trailing) "(f" "     x)" (string-append ";; chez-fmt: on" trailing) "(g" "  y)")
-        (formatted (lines (string-append ";; chez-fmt: off" trailing) "(f" "     x)" (string-append ";; chez-fmt: on" trailing) "(g" "y)")))
+        (lines (string-append ";; czfmt: off" trailing) "(f" "     x)" (string-append ";; czfmt: on" trailing) "(g" "  y)")
+        (formatted (lines (string-append ";; czfmt: off" trailing) "(f" "     x)" (string-append ";; czfmt: on" trailing) "(g" "y)")))
       (check-equal?
-        (lines (string-append ";; chez-fmt: skip" trailing) "(f" "     x)" "(g" "  y)")
-        (formatted (lines (string-append ";; chez-fmt: skip" trailing) "(f" "     x)" "(g" "y)"))))
+        (lines (string-append ";; czfmt: skip" trailing) "(f" "     x)" "(g" "  y)")
+        (formatted (lines (string-append ";; czfmt: skip" trailing) "(f" "     x)" "(g" "y)"))))
     '(" " "\t" " \t ")))
 
 (test "format-line-indentation indents a new line inside unclosed forms as whole-file formatting would"
@@ -356,7 +356,7 @@
   (check-equal? '() (edits (lines "(a))" "" "(b") 1))
   (check-equal? '() (edits (lines "(f \"a" "  b\")") 1))
   (check-equal? '() (edits (lines "#| a" "  b |#") 1))
-  (check-equal? '() (edits (lines ";; chez-fmt: off" "(f" "    x)") 2))
+  (check-equal? '() (edits (lines ";; czfmt: off" "(f" "    x)") 2))
   (check-equal? '() (edits (lines "  #!r6rs" "(f)") 0))
   (check-equal? 1 (length (edits (lines "(foo a" "  b" "  c)") 1)))
   (check-equal? 5 (string-length (text-edit-replacement (car (edits (lines "(foo a" "  b" "  c)") 1)))))
@@ -366,13 +366,13 @@
   (check-equal? 2 (string-length (text-edit-replacement (car (edits (lines "(foo" "    ; c" "  x)") 1))))))
 
 (test "a project's format section overrides the defaults, nearer files winning"
-  (let ([root (format "/tmp/chez-tools-format-test-~a" (process-id))])
+  (let ([root (format "/tmp/cz-format-test-~a" (process-id))])
     (system (format "rm -rf ~a; mkdir -p ~a/a/b" root root))
-    (call-with-output-file (string-append root "/a/.chez-tools")
+    (call-with-output-file (string-append root "/a/.cz")
       (lambda (out)
         (put-string out "(root)\n(format (call-layout align) (head-alone 1) (indent (mat 1) ((with-x with-y) 0) (2 nanopass-case) (define #f) (my-let let)))\n"))
       'truncate)
-    (call-with-output-file (string-append root "/a/b/.chez-tools")
+    (call-with-output-file (string-append root "/a/b/.cz")
       (lambda (out) (put-string out "(format (comment-lines as-code) (column-zero-heads begin) (indent (mat 2) (with-y -1)))\n"))
       'truncate)
     (let ([style (config-format-style (find-project-config (string-append root "/a/b/x.ss") root))])

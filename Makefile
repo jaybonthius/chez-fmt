@@ -11,7 +11,7 @@ TEST_TIMEOUT ?= 300
 LONG_TIMEOUT ?= 7200
 TESTS := $(sort $(wildcard tests/*-test.sps))
 SCHEME_PATH = $(abspath $(shell command -v $(SCHEME)))
-LIBEXEC = $(abspath $(PREFIX))/lib/chez-fmt
+LIBEXEC = $(abspath $(PREFIX))/lib/czfmt
 
 .PHONY: deps build test test-corpus fuzz perf install clean $(TESTS:%=run/%)
 
@@ -43,10 +43,10 @@ perf: build
 # the compiled program must match.
 install: build
 	mkdir -p $(abspath $(PREFIX))/bin $(LIBEXEC)
-	cp build/bin/chez-fmt.so $(LIBEXEC)/
-	printf '#!/bin/sh\nexec "%s" -q --program "%s" "$$@"\n' '$(SCHEME_PATH)' '$(LIBEXEC)/chez-fmt.so' \
-	  > $(abspath $(PREFIX))/bin/chez-fmt
-	chmod +x $(abspath $(PREFIX))/bin/chez-fmt
+	cp build/bin/czfmt.so $(LIBEXEC)/
+	printf '#!/bin/sh\nexec "%s" -q --program "%s" "$$@"\n' '$(SCHEME_PATH)' '$(LIBEXEC)/czfmt.so' \
+	  > $(abspath $(PREFIX))/bin/czfmt
+	chmod +x $(abspath $(PREFIX))/bin/czfmt
 
 clean:
 	rm -rf build

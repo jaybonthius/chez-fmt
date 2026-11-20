@@ -1,9 +1,9 @@
 (import (chezscheme) (check) (programs) (analysis posix) (analysis threads))
 
-(define formatter (string-append (current-directory) "/build/bin/chez-fmt.so"))
+(define formatter (string-append (current-directory) "/build/bin/czfmt.so"))
 
 (define root
-  (let ([dir (format "/tmp/chez-tools-fmt-test-~a" (process-id))])
+  (let ([dir (format "/tmp/cz-fmt-test-~a" (process-id))])
     (system (format "rm -rf ~a; mkdir -p ~a" dir dir))
     dir))
 
@@ -116,7 +116,7 @@
 
 (test "the style comes from the project's configuration, or the file --config names"
   (let ([dir (fresh-directory "config")])
-    (write-file! (string-append dir "/.chez-tools") "(root)\n(format (indent (my-define 1)))\n")
+    (write-file! (string-append dir "/.cz") "(root)\n(format (indent (my-define 1)))\n")
     (write-file! (string-append dir "/other") "(format (head-alone 1))\n")
     (write-file! (string-append dir "/a.ss") "(my-define x\ny)\n(foo\ny)\n")
     (check-equal? 0 (status (run (list "--diff" "--config" "other" "a.ss") dir)))
@@ -125,14 +125,14 @@
     (write-file! (string-append dir "/a.ss") "(my-define x\ny)\n(foo\ny)\n")
     (check-equal? 0 (status (run (list "a.ss") dir)))
     (check-equal? "(my-define x\n  y)\n(foo\n  y)\n" (read-file (string-append dir "/a.ss")))
-    (write-file! (string-append dir "/.chez-tools") "(format (head-alone 3))\n")
+    (write-file! (string-append dir "/.cz") "(format (head-alone 3))\n")
     (let ([r (run (list "a.ss") dir)])
       (check-equal? 2 (status r))
       (check (string-search "head-alone" (errors r))))))
 
 (test "exclusions in a directory walk match whole path components"
   (let ([dir (fresh-directory "exclude")])
-    (write-file! (string-append dir "/.chez-tools") "(root)\n(exclude \"**/skip.ss\")\n")
+    (write-file! (string-append dir "/.cz") "(root)\n(exclude \"**/skip.ss\")\n")
     (write-file! (string-append dir "/skip.ss") unformatted)
     (write-file! (string-append dir "/noskip.ss") unformatted)
     (let ([r (run (list "--check" ".") dir)])
@@ -143,11 +143,11 @@
   (let ([dir (fresh-directory "temporary")])
     (write-file! (string-append dir "/a.ss") unformatted)
     (for-each (lambda (name) (write-file! (string-append dir "/" name) "keep me"))
-      (list ".chez-fmt-a.ss-" ".chez-fmt-a.ss-XXXXXX" (format ".chez-fmt-~a-a.ss" (process-id)) ".a.ss.chez-fmt-tmp"))
+      (list ".czfmt-a.ss-" ".czfmt-a.ss-XXXXXX" (format ".czfmt-~a-a.ss" (process-id)) ".a.ss.czfmt-tmp"))
     (check-equal? 0 (status (run (list "a.ss") dir)))
     (check-equal? formatted (read-file (string-append dir "/a.ss")))
     (for-each (lambda (name) (check-equal? "keep me" (read-file (string-append dir "/" name))))
-      (list ".chez-fmt-a.ss-" ".chez-fmt-a.ss-XXXXXX" (format ".chez-fmt-~a-a.ss" (process-id)) ".a.ss.chez-fmt-tmp"))
+      (list ".czfmt-a.ss-" ".czfmt-a.ss-XXXXXX" (format ".czfmt-~a-a.ss" (process-id)) ".a.ss.czfmt-tmp"))
     (check-equal? 5 (length (directory-list dir)))))
 
 (define (error-lines r)
@@ -209,7 +209,7 @@
 (define IN_CLOSE_NOWRITE #x10)
 (define IN_NONBLOCK #x800)
 
-;; Formatting a long file gives the test time to change it once chez-fmt
+;; Formatting a long file gives the test time to change it once czfmt
 ;; has closed it after reading, which inotify reports.
 (test "a file changed while it is formatted is reported and keeps the change"
   (let* ([dir (fresh-directory "changed")] [file (string-append dir "/big.ss")]
